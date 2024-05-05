@@ -1,46 +1,39 @@
-name: docs deploy.
-
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - "website/**/*"
-      - "docs/**/*"
-  pull_request:
-    branches:
-      - master
-    paths:
-      - "website/**/*"
-      - "docs/**/*"
-
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
+  group: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   build:
     if: github.repository =='DTStack/chunjun'
     name: Deployment help document.
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: yarn
-          cache-dependency-path: website/yarn.lock
-      - name: build
-        working-directory: website
-        run: |
-          yarn install --frozen-lockfile
-          yarn build
-          yarn export
-      - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: gh-pages
-          folder: website/out
-  
+    - continue-on-error: true
+      uses: actions/checkout@v3
+    - continue-on-error: true
+      name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        cache: yarn
+        cache-dependency-path: website/yarn.lock
+        node-version: 16
+    - continue-on-error: true
+      name: build
+      run: 'yarn install --frozen-lockfile
+
+        yarn build
+
+        yarn export
+
+        '
+      working-directory: website
+    - continue-on-error: true
+      name: Deploy
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branch: gh-pages
+        folder: website/out
+    timeout-minutes: 10
+name: docs deploy.
+on:
+  repository_dispatch:
+    types: trigger-ga___docs-deploy.yml
